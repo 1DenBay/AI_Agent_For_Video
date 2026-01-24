@@ -93,17 +93,17 @@ def generate_video_plan(topic_tr): # Türkçe konu alır
     Create a highly engaging, 30-50 second script about this topic in English.
     The script must be captivating (e.g., "Did you know that...", "Here is a dark fact...").
     
-    Also, provide 3 specific, simple search keywords (English) to find background stock videos for this script (e.g., "dark forest", "clock", "man thinking").
+    Also, Provide 8 specific, simple search keywords for stock video footage to visualize the script. (e.g., "dark forest", "clock", "man thinking").
     
     Strictly output ONLY a valid JSON object in this format (no markdown, no extra text):
     {{
         "title": "A catchy short title",
         "script": "The full spoken text of the video...",
-        "keywords": ["keyword1", "keyword2", "keyword3"]
+        "keywords": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8"]
     }}
     """
     
-    print(f"🧠 Beyin çalışıyor: '{topic_tr}' konusu işleniyor...")
+    print(f"🧠 Beyin çalışıyor: ({CURRENT_MODEL_NAME})... Konu: {topic_tr}")
     
    
     try:

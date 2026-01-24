@@ -1,4 +1,5 @@
 import os
+import random
 from moviepy.editor import VideoFileClip, AudioFileClip, concatenate_videoclips # video düzenleme kütüphanesi
 
 OUTPUT_DIR = "final_videos"
@@ -27,14 +28,24 @@ def create_final_video(audio_path, video_paths, output_filename="shorts_final.mp
 
 
         # VİDEO PLANLAMASI
-        num_videos = len(video_paths) # toplam görüntü sayısı
-        clip_duration = total_duration / num_videos # her bir görüntünün ne kadar süreceği. ses süresini baz alarak ona göre bölüyoruz.
-        if clip_duration < 2.0: clip_duration = 2.0 # fazla görüntü olunca görüntü başına süre düşerse bişey anlaşılmaz diye en az 2 saniye yapıyoruz.
+        CLIP_DURATION = 3.5  # Her klip maksimum 3.5 saniye
+        print(f"✂️ Hızlandırma Modu: Her sahne {CLIP_DURATION} saniye olacak.")
 
 
         # VİDEOLARI HAZIRLA
-        processed_clips = []
-        for v_path in video_paths:
+        processed_clips = [] # işlenmiş klipleri tutacak liste
+        current_duration = 0
+        # Videoları karıştıracak hep aynı sırayla gitmesin
+        random.shuffle(video_paths)
+        
+        # Böylece süre dolana kadar sıradakini çekeriz - Elimizdeki videoları sonsuz döngüye alalım (Iterator)
+        video_pool = video_paths * 10
+
+        for v_path in video_pool:
+            # Hedef süreye ulaştıysak döngüyü kır
+            if current_duration >= total_duration:
+                break
+
             try:
                 clip = VideoFileClip(v_path) # görüntüleri yüklüyoruz 
                 clip = clip.without_audio() # sonrasında bizim dublajı bastırmaması için görüntü seslerini atıyoruz
@@ -43,11 +54,21 @@ def create_final_video(audio_path, video_paths, output_filename="shorts_final.mp
                 if clip.w != TARGET_WIDTH or clip.h != TARGET_HEIGHT:
                     clip = clip.resize(newsize=(TARGET_WIDTH, TARGET_HEIGHT))
                 
-                # Görüntüyü belirlediğimiz görüntü başına düşen süre kadar alıyoruz
-                if clip.duration > clip_duration:
-                    clip = clip.subclip(0, clip_duration)
+                # RASTGELE KESİM
+                # Videonun hep başını değil, ortasını vs. alalım.
+                if clip.duration > CLIP_DURATION:
+                    # Videonun sonundan pay bırakarak rastgele başlangıç seç
+                    max_start = clip.duration - CLIP_DURATION
+                    start_t = random.uniform(0, max_start)
+                    clip = clip.subclip(start_t, start_t + CLIP_DURATION)
+                else:
+                    # Video kısaysa olduğu gibi al (loop yaparsak bozulabilir, kısa kalsın)
+                    pass
                 
-                processed_clips.append(clip) # işlenmiş görüntüyü döngü başında oluşturduğumuz boş listeye ekliyoruz
+                processed_clips.append(clip)
+                current_duration += clip.duration
+                print(f"   ✅ Eklendi: {os.path.basename(v_path)} (Süre: {clip.duration:.2f}s)")
+
             except Exception as e:
                 print(f"   ❌ Hata ({os.path.basename(v_path)}): {e}")
 
@@ -56,13 +77,9 @@ def create_final_video(audio_path, video_paths, output_filename="shorts_final.mp
 
 
         # BİRLEŞTİRME
+        print("🔗 Klipler birleştiriliyor...")
         video_track = concatenate_videoclips(processed_clips, method="compose") # görüntüleri tek video gibi birleştirir
-        
-        # Loop ile görüntüyü ses süresine yetiştirme (Ekran siyaha düşmesin diye)
-        if video_track.duration < total_duration: # eğer görüntü süresi sesten az ise
-            n_loops = int(total_duration / video_track.duration) + 2 # kaç kere döneceğini hesapla
-            video_track = video_track.loop(n=n_loops) # görüntü bitip siyah ekrana düşmez
-            
+
 
         # KESME VE MONTAJ
         final_clip = video_track.subclip(0, total_duration) # görüntüyü ses süresine göre kesiyoruz
@@ -71,7 +88,7 @@ def create_final_video(audio_path, video_paths, output_filename="shorts_final.mp
 
         # RENDER
         output_path = os.path.join(OUTPUT_DIR, output_filename) # çıkış dosya yolu
-        print(f"⏳ Render başladı... Hedef: {output_path}")
+        print(f"⏳ Render başladı...")
         
         # 'ffmpeg_params=["-ac", "2"]' -> Sesi zorla 2 kanal (Stereo) yapar. Çünkü oluşturduğumuz MP3 dosyaları mono oluyor moviepy kütüphanesi streo çalıştığından hata verir.
         # 'audio_codec="libmp3lame"' -> En uyumlu MP3 kodeğini kullan
