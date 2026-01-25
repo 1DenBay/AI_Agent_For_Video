@@ -4,6 +4,7 @@ from agent_brain import generate_video_plan
 from agent_voice import generate_audio_file
 from agent_media import get_media_files
 from agent_editor import create_final_video
+from agent_subtitler import add_subtitles
 
 """
     Tüm ajanları sırayla çalıştıran ana orkestra şefi.
@@ -51,19 +52,36 @@ def main_pipeline(topic): # parametre olarak video konusu alır
 
     # --- ADIM 4: MONTAJ (Editor) ---
     print("\n🎬 ADIM 4: Final Montaj ve Render...")
-    final_filename = f"shorts_{int(time.time())}.mp4"
-    final_path = create_final_video(audio_filename, video_paths, final_filename)
+    raw_video_filename = f"raw{int(time.time())}.mp4"
+    raw_video_path = create_final_video(audio_filename, video_paths, raw_video_filename)
     
-    if final_path:
-        print(f"\n✨ İŞLEM BAŞARILI! ✨")
-        print(f"📂 Videoeq Hazır: {final_path}")
-        print("------------------------------------------------")
-    else:
+    if not raw_video_path:
         print("❌ HATA: Editor videoyu oluşturamadı.")
+        return 
+        
+    print(f"✅ Ham montaj tamamlandı: {raw_video_path}")
+
+
+    # --- ADIM 5: ALTYAZI (FİNAL) ---
+    print("\n📝 ADIM 5: Altyazı ve Makyaj Yapılıyor...")
+    final_filename = f"SHORTS_FINAL_{int(time.time())}.mp4"
+    final_output_path = os.path.join("final_videos", final_filename)
+    
+    subtitle_result = add_subtitles(raw_video_path, audio_filename, final_output_path)
+    
+    if subtitle_result:
+        print(f"\n✨✨✨ İŞLEM BAŞARILI! ✨✨✨")
+        print(f"📂 VİDEONUZ HAZIR: {subtitle_result}")
+        print(f"------------------------------------------------")
+        
+        # İstersen ham videoyu silenebilir, şimdilik kalsın. bazen hata oluyor geri dönüp bakmak için.d
+        # os.remove(raw_video_path) 
+    else:
+        print("❌ HATA: Altyazı eklenemedi (Ham video klasörde duruyor).")
 
 
 if __name__ == "__main__":
-    # Kullanıcıdan konu iste
+    # konu iste gir
     try:
         user_topic = input("\nVideo Konusu Nedir? (Örn: 'Simülasyon Teorisi', 'Kara Delikler'): ")
         if user_topic.strip():
