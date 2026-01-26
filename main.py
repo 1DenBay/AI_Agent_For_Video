@@ -1,10 +1,13 @@
 import os
 import time
+# üreticiler
 from agents.agent_brain import generate_video_plan
 from agents.agent_voice import generate_audio_file
 from agents.agent_media import get_media_files
 from agents.agent_editor import create_final_video
 from agents.agent_subtitler import add_subtitles
+# dağıtıcı
+from distributors.agent_youtube import upload_to_youtube
 
 """
     Tüm ajanları sırayla çalıştıran ana orkestra şefi.
@@ -74,14 +77,43 @@ def main_pipeline(topic): # parametre olarak video konusu alır
         print(f"📂 VİDEONUZ HAZIR: {subtitle_result}")
         print(f"------------------------------------------------")
         
-        # İstersen ham videoyu silenebilir, şimdilik kalsın. bazen hata oluyor geri dönüp bakmak için.d
-        # os.remove(raw_video_path) 
+        # İstenirse ham videoyu silenebilir, şimdilik kalsın. bazen hata oluyor geri dönüp bakmak için.
+        # os.remove(raw_video_path)
+
+
+        # --- ADIM 6: YOUTUBE UPLOAD ---
+        print(f"------------------------------------------------")
+        print("\n🚀 ADIM 6: YouTube Dağıtımı Başlıyor...")
+        
+        # Açıklama Metni Oluşturma -- Başlık + Bilgilendirme + Hashtagler
+        hashtag_string = " ".join([f"#{k.replace(' ', '')}" for k in search_keywords[:5]]) # İlk 5 anahtar kelimeden hashtag oluştur (brainden video üretim için 10 kelime alıyoruk ya)
+        description = f"{video_title}\n\n🤖 Bu içerik Yapay Zeka ile otomatik üretilmiştir.\n\n#shorts #ai #facts {hashtag_string}" # yazacak açıklama
+        
+        # Etiketleri Düzenleme - hashtag türünde değil normal anahtar kelimeler (Liste formatında, boşluksuz)
+        tags = [k.replace(" ", "") for k in search_keywords]
+        
+        # Yükleme Ajanını Çağır
+        video_id = upload_to_youtube(
+            subtitle_result, # en son üretilen altyazılı videoyu alır
+            video_title,  # brainden gelen başlık
+            description, # açıklama metni
+            tags=tags, # etiketler
+            privacy_status="private" # TEST İÇİN 'PRIVATE' (GİZLİ). Sıkıntı yoksa 'public' yapabilirsin.
+        )
+        
+        if video_id:
+            print(f"🎉 GÖREV TAMAMLANDI! Video YouTube'a başarıyla yüklendi.")
+            print(f"🔗 İzleme Linki: https://www.youtube.com/watch?v={video_id}")
+        else:
+            print("⚠️ Video üretildi ancak YouTube yüklemesinde bir sorun oluştu.")
+
     else:
         print("❌ HATA: Altyazı eklenemedi (Ham video klasörde duruyor).")
 
 
+# BİRİM TEST
 if __name__ == "__main__":
-    # konu iste gir
+    # konu iste gir 
     try:
         user_topic = input("\nVideo Konusu Nedir? (Örn: 'Simülasyon Teorisi', 'Kara Delikler'): ")
         if user_topic.strip():
