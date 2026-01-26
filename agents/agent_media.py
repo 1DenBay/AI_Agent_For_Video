@@ -61,11 +61,6 @@ def search_video(query):
 def download_video(url, filename):
     
     filepath = os.path.join(MEDIA_DIR, filename)
-    
-    # Eğer dosya zaten varsa tekrar indirme (Cache mantığı)
-    if os.path.exists(filepath):
-        print(f"📂 Dosya zaten var, pas geçiliyor: {filename}")
-        return filepath
 
     print(f"⬇️ İndiriliyor: {filename}...")
     
@@ -91,6 +86,15 @@ def download_video(url, filename):
 """
 def get_media_files(keywords): # beyinden gelen kelimleri alacak
     
+    # Eski videoları temizler.
+    print("🧹 Eski videolar temizleniyor (Sahne hazırlanıyor)...")
+    for f in os.listdir(MEDIA_DIR):
+        if f.endswith(".mp4"):
+            try:
+                os.remove(os.path.join(MEDIA_DIR, f))
+            except Exception as e:
+                print(f"⚠️ Silinemedi: {f} - {e}")
+
     downloaded_paths = []
     
     for i, keyword in enumerate(keywords):
