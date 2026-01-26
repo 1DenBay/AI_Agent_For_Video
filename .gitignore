@@ -1,11 +1,26 @@
-# Sanal Ortam (GitHub'a yüklenmemeli, çok yer kaplar)
-venv/
-__pycache__/
-
-# Çevresel Değişkenler (API Key'lerini burada saklayacağız, gizli kalmalı)
+# --- GİZLİ ANAHTARLAR (BUNLAR ASLA GİTMEMELİ) ---
 .env
+client_secret.json
+token.pickle
+credentials.json
 
-# Video çıktıları ve geçici dosyalar (Depoyu şişirmesin)
+# --- GEREKSİZ DOSYALAR ---
+__pycache__/
+*.pyc
+.DS_Store
+
+# --- SANAL ORTAM ---
+venv/
+.venv/
+env/
+
+# --- BÜYÜK MEDYA DOSYALARI (GitHub şişmesin) ---
+media_files/
+final_videos/
+temp/
 *.mp4
 *.mp3
-temp/
+
+# --- IDE AYARLARI ---
+.vscode/
+.idea/
