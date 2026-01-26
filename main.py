@@ -1,10 +1,10 @@
 import os
 import time
-from agent_brain import generate_video_plan
-from agent_voice import generate_audio_file
-from agent_media import get_media_files
-from agent_editor import create_final_video
-from agent_subtitler import add_subtitles
+from agents.agent_brain import generate_video_plan
+from agents.agent_voice import generate_audio_file
+from agents.agent_media import get_media_files
+from agents.agent_editor import create_final_video
+from agents.agent_subtitler import add_subtitles
 
 """
     Tüm ajanları sırayla çalıştıran ana orkestra şefi.
