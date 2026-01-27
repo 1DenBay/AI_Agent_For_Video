@@ -1,10 +1,21 @@
+# Yapay Zeka (Brain & Subtitle)
 google-generativeai
 openai-whisper
+
+# Medya & Montaj (Editor)
 moviepy==1.0.3
+imageio-ffmpeg
 requests
 python-dotenv
-imageio-ffmpeg
-# YouTube API Kütüphaneleri
+
+# Seslendirme (Voice)
+gTTS
+
+# YouTube API
 google-api-python-client
 google-auth-oauthlib
 google-auth-httplib2
+
+# TikTok Otomasyonu (V12 Engine - KRİTİK)
+selenium
+undetected-chromedriver
