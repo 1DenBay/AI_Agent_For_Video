@@ -2,6 +2,7 @@
 .env
 client_secret.json
 token.pickle
+tiktok_cookies.pickle
 credentials.json
 
 # --- GEREKSİZ DOSYALAR ---
