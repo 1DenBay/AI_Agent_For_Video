@@ -1,4 +1,4 @@
-### **Markdown**# 🚀 AI Video Agent (v1.0)
+ 🚀 AI Video Agent (v1.0)
 
 **Tek bir komutla fikirlerinizi viral videolara dönüştüren otonom içerik üretim ve dağıtım fabrikası.**
 
