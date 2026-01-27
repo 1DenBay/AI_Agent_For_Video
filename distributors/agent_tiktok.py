@@ -110,7 +110,7 @@ def upload_tiktok(video_path, description):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
 
-        # Butonları ve buton görünümlü divleri topla
+        # Butonları ve buton görünümlü divleri topla (normalde xpath ile tek seferde de alabiliriz ama çalışmıyor robot engelleyiciler yüzünden)
         buttons = driver.find_elements(By.TAG_NAME, "button")
         divs = driver.find_elements(By.XPATH, "//div[@role='button']")
         all_elements = buttons + divs # toplanan hepsini bir araya getirir

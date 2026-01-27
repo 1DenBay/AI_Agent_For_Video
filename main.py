@@ -8,6 +8,7 @@ from agents.agent_editor import create_final_video
 from agents.agent_subtitler import add_subtitles
 # dağıtıcı
 from distributors.agent_youtube import upload_to_youtube
+from distributors.agent_tiktok import upload_tiktok
 
 """
     Tüm ajanları sırayla çalıştıran ana orkestra şefi.
@@ -72,53 +73,71 @@ def main_pipeline(topic): # parametre olarak video konusu alır
     
     subtitle_result = add_subtitles(raw_video_path, audio_filename, final_output_path)
     
-    if subtitle_result:
-        print(f"\n✨✨✨ İŞLEM BAŞARILI! ✨✨✨")
-        print(f"📂 VİDEONUZ HAZIR: {subtitle_result}")
-        print(f"------------------------------------------------")
-        
-        # İstenirse ham videoyu silenebilir, şimdilik kalsın. bazen hata oluyor geri dönüp bakmak için.
-        # os.remove(raw_video_path)
+    if not subtitle_result:
+        print("❌ HATA: Altyazı eklenemedi.")
+        return
+    
+    print(f"\n✨✨✨ İŞLEM BAŞARILI! ✨✨✨")
+    print(f"📂 VİDEONUZ HAZIR: {subtitle_result}")
+    print(f"------------------------------------------------")
+    
+    # İstenirse ham videoyu silenebilir, şimdilik kalsın. bazen hata oluyor geri dönüp bakmak için.
+    # os.remove(raw_video_path)
 
 
-        # --- ADIM 6: YOUTUBE UPLOAD ---
-        print(f"------------------------------------------------")
-        print("\n🚀 ADIM 6: YouTube Dağıtımı Başlıyor...")
-        
-        # Açıklama Metni Oluşturma -- Başlık + Bilgilendirme + Hashtagler
-        hashtag_string = " ".join([f"#{k.replace(' ', '')}" for k in search_keywords[:5]]) # İlk 5 anahtar kelimeden hashtag oluştur (brainden video üretim için 10 kelime alıyoruk ya)
-        description = f"{video_title}\n\n🤖 Bu içerik Yapay Zeka ile otomatik üretilmiştir.\n\n#shorts #ai #facts {hashtag_string}" # yazacak açıklama
-        
-        # Etiketleri Düzenleme - hashtag türünde değil normal anahtar kelimeler (Liste formatında, boşluksuz)
-        tags = [k.replace(" ", "") for k in search_keywords]
-        
-        # Yükleme Ajanını Çağır
-        video_id = upload_to_youtube(
+    # --- UPLOAD ---
+    print(f"------------------------------------------------")
+    print("\n🚀 ADIM 6: YouTube - Tiktok Dağıtımı Başlıyor...")
+    
+    # Açıklama Metni Oluşturma -- Başlık + Bilgilendirme + Hashtagler
+    hashtag_string = " ".join([f"#{k.replace(' ', '')}" for k in search_keywords[:5]]) # İlk 5 anahtar kelimeden hashtag oluştur (brainden video üretim için 10 kelime alıyoruk ya)
+    
+    yt_desc = f"{video_title}\n\n🤖 AI tarafından üretilmiştir.\n\n#shorts #ai #facts {hashtag_string}"
+    yt_tags = [k.replace(" ", "") for k in search_keywords]
+
+    # TikTok Metni
+    tt_desc = f"{video_title} 🤖 #ai #shorts {hashtag_string}"
+    
+
+    # Youtube Dağıtımı
+    print("\n📺 YouTube Kanalına Yükleniyor...")
+    try:
+        upload_to_youtube(
             subtitle_result, # en son üretilen altyazılı videoyu alır
             video_title,  # brainden gelen başlık
-            description, # açıklama metni
-            tags=tags, # etiketler
+            yt_desc, # açıklama metni
+            tags=yt_tags, # etiketler
             privacy_status="private" # TEST İÇİN 'PRIVATE' (GİZLİ). Sıkıntı yoksa 'public' yapabilirsin.
         )
-        
-        if video_id:
-            print(f"🎉 GÖREV TAMAMLANDI! Video YouTube'a başarıyla yüklendi.")
-            print(f"🔗 İzleme Linki: https://www.youtube.com/watch?v={video_id}")
-        else:
-            print("⚠️ Video üretildi ancak YouTube yüklemesinde bir sorun oluştu.")
+    except Exception as e:
+        print(f"⚠️ YouTube Hatası (Pas geçiliyor): {e}")
 
-    else:
-        print("❌ HATA: Altyazı eklenemedi (Ham video klasörde duruyor).")
+
+    # Tiktok Dağıtımı
+    print("\n🎵 TikTok Yükleniyor...")
+    print("   👉 Tarayıcı açılacak, lütfen müdahale etme.")
+    
+    upload_tiktok(
+        subtitle_result,
+        tt_desc
+    )
+    
+    print("\n" + "="*60)
+    print("🎉 FABRİKA PAYDOS! TÜM GÖREVLER BAŞARIYLA TAMAMLANDI.")
+    print("="*60 + "\n")
+
 
 
 # BİRİM TEST
 if __name__ == "__main__":
     # konu iste gir 
     try:
-        user_topic = input("\nVideo Konusu Nedir? (Örn: 'Simülasyon Teorisi', 'Kara Delikler'): ")
-        if user_topic.strip():
-            main_pipeline(user_topic)
-        else:
-            print("❌ Konu girmediniz, işlem iptal edildi.")
+        while True:
+            print("\n--- YENİ GÖREV ---")
+            user_topic = input("Video Konusu Nedir? (Çıkış için 'q'): ")
+            if user_topic.lower() == 'q':
+                break
+            if user_topic.strip():
+                main_pipeline(user_topic)
     except KeyboardInterrupt:
-        print("\n👋 İşlem kullanıcı tarafından durduruldu.")
+        print("\n👋 Sistem kapatılıyor.")
