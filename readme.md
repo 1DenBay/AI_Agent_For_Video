@@ -138,7 +138,7 @@ ai-video-agent/
 
 ## 🗺️ Yol Haritası (v1.1)
 
-* [ ] Medya Ajanı için "Akıllı Yedekleme" (Video bulunamazsa alternatif kelime arama).
+* [X] Medya Ajanı için "Akıllı Yedekleme" (Video bulunamazsa alternatif kelime arama).
 * [ ] Farklı ses seçenekleri (ElevenLabs entegrasyonu).
 * [ ] Instagram Reels desteği.
 

@@ -1,8 +1,16 @@
 import os
 import requests
 from dotenv import load_dotenv
+import random
 
 load_dotenv()
+
+# video aramalarında son çare olarak kullanılacak genel yedek kelimeler
+GLOBAL_BACKUPS = [
+    "Abstract background", "Blue particles", "Technology connection", 
+    "Time lapse city", "Nature landscape", "Galaxy stars", 
+    "Cinematic lighting", "Slow motion water"
+]
 
 # pexels api anahtarı .env dosyasından alınır
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
@@ -56,6 +64,36 @@ def search_video(query):
 
 
 """
+    V1.1 - Akıllı Arama Yöneticisi:
+    Tam kelimeyi arar.- Bulamazsa kelimeleri parçalayıp (sondan başa) arar.
+    Yine bulamazsa GLOBAL_BACKUPS listesinden rastgele bir video seçer. (boş kalmasın diye)
+"""
+def smart_search_manager(query):
+    # 1- önce normal arama yapılır 
+    url = search_video(query)
+    if url: return url
+
+    # 2- Kelime Parçalama (Bulunuş anahtar kelimeleri parçalar)
+    # "Dark Forest Scary" -> Önce "Scary", sonra "Forest", sonra "Dark"
+    words = query.split() # boşluklardan parçala
+    if len(words) > 1: # birden fazla kelime varsa parçalayarak dene
+        print(f"   ⚠️ Tam eşleşme yok. Kelimeler parçalanarak deneniyor...")
+        for word in reversed(words): # sondan başa doğru dene
+            if len(word) > 2: # "at", "in" gibi kısa kelimeleri, bağlaçları filan geç
+                print(f"   🔄 Alternatif aranıyor: '{word}'")
+                url = search_video(word) # parçalanmış kelime ile ara
+                if url:
+                    print(f"   ✅ Alternatif bulundu: '{word}'")
+                    return url
+
+    # 3- global Yedek (Son Çare)
+    print(f"   ❌ Kritik: '{query}' için hiçbir görsel bulunamadı.")
+    backup = random.choice(GLOBAL_BACKUPS) # rastgele yedek kelime seç (en başlta liste içinde tanımlandı)
+    print(f"   🆘 Acil durum yedeği devreye giriyor: '{backup}'")
+    return search_video(backup) # rastgele seçilen yedek kelime ile ara
+
+
+"""
     Linkteki videoyu bilgisayara (media_files klasörüne) indirir.
 """
 def download_video(url, filename):
@@ -98,7 +136,7 @@ def get_media_files(keywords): # beyinden gelen kelimleri alacak
     downloaded_paths = []
     
     for i, keyword in enumerate(keywords):
-        video_url = search_video(keyword)
+        video_url = smart_search_manager(keyword) # v1.1 yeni akıllı arama yöneticisi
         
         if video_url:
             # Dosya ismini temizle ve numaralandır (video_0.mp4, video_1.mp4)
@@ -110,7 +148,7 @@ def get_media_files(keywords): # beyinden gelen kelimleri alacak
     return downloaded_paths
 
 
-# --- TEST BLOĞU ---
+# --- BİRİM TEST ---
 if __name__ == "__main__":
     # Test kelimeleri (Brain'den gelmiş gibi)
     test_keywords = ["dark forest", "clock ticking", "stormy sky"]
