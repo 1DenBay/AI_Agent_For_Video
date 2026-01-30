@@ -4,6 +4,7 @@ client_secret.json
 token.pickle
 tiktok_cookies.pickle
 credentials.json
+video_metadata.json
 
 # --- GEREKSİZ DOSYALAR ---
 __pycache__/

@@ -89,14 +89,20 @@ def main_pipeline(topic): # parametre olarak video konusu alır
     print(f"------------------------------------------------")
     print("\n🚀 ADIM 6: YouTube - Tiktok Dağıtımı Başlıyor...")
     
-    # Açıklama Metni Oluşturma -- Başlık + Bilgilendirme + Hashtagler
-    hashtag_string = " ".join([f"#{k.replace(' ', '')}" for k in search_keywords[:5]]) # İlk 5 anahtar kelimeden hashtag oluştur (brainden video üretim için 10 kelime alıyoruk ya)
+    # [v1.1 GÜNCELLEME] Brain Ajanının ürettiği profesyonel verileri çekiyoruz
+    # Eskiden burada kelimeleri birleştirip biz uyduruyorduk, şimdi yapay zeka yazdı.
+    ai_description = plan.get('description', '') # Brain'den gelen açıklama
+    ai_hashtags = plan.get('hashtags', '')       # Brain'den gelen hashtagler (#fact #wow vs.)
     
-    yt_desc = f"{video_title}\n\n🤖 AI tarafından üretilmiştir.\n\n#shorts #ai #facts {hashtag_string}"
+    # YouTube İçin Açıklama Metni
+    # Başlık + AI Açıklaması + AI Hashtagleri + Standart Etiketler
+    yt_desc = f"{video_title}\n\n{ai_description}\n\n{ai_hashtags}\n\n#shorts #ai #generated"
+    
+    # YouTube Etiketleri (Keywords listesini kullanmaya devam edebiliriz, teknik etiket için iyidir)
     yt_tags = [k.replace(" ", "") for k in search_keywords]
 
-    # TikTok Metni
-    tt_desc = f"{video_title} 🤖 #ai #shorts {hashtag_string}"
+    # TikTok Metni (TikTok kısa sever: Başlık + Hashtagler)
+    tt_desc = f"{video_title}\n\n{ai_hashtags} #shorts #ai"
     
 
     # Youtube Dağıtımı

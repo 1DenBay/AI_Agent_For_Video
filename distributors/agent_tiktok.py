@@ -1,11 +1,53 @@
 import os
 import time
-import pickle
+import pickle # çerezleri kaydetmek ve yüklemek için
+import subprocess # dış komut çalıştırmak için (ffmpeg vs için)
+import re # regex işlemleri için
+import platform # işletim sistemi bilgisi için
 import undetected_chromedriver as uc # robot engelleri için (sadece selenium kullanırsak anlaşılır)
 from selenium.webdriver.common.by import By # html elementlerini bulmak için (hangi buton nerede filan)
 from selenium.webdriver.common.keys import Keys # klavye tuşları simülasyonu için (escape,enter vs)
 
 COOKIE_FILE = "tiktok_cookies.pickle" # Çerez dosyası (sürekli tekrar tekrar giriş yapmamak için)
+
+
+"""
+    [v1.1 EKLENDİ] Sistemdeki Chrome sürümünü bulan yardımcı fonksiyon.
+    Böylece 'SessionNotCreatedException' hatası alınmaz. yoksa chrome güncelleme gelince hata veriyor.
+    genelde sürüm numarasını alır ve ana sürüm numarasını döner (örneğin 114.0.5735.199 -> 114 döner (bu 114 sayısını regex ile alıyoruz))
+"""
+def get_chrome_major_version():
+    system_name = platform.system() # İşletim sistemi adı
+    version = None # sürüm numarası
+    try:
+        if system_name == "Darwin": # MacOS
+            process = subprocess.Popen(
+                ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--version"], 
+                stdout=subprocess.PIPE
+            )
+            output = process.communicate()[0].decode("utf-8")
+            version = re.search(r"(\d+)\.", output).group(1)
+        elif system_name == "Windows": # Windows
+            paths = [
+                r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+            ]
+            for path in paths:
+                if os.path.exists(path):
+                    cmd = f'(Get-Item "{path}").VersionInfo.ProductVersion'
+                    output = subprocess.check_output(["powershell", "-Command", cmd]).decode("utf-8")
+                    version = output.split(".")[0]
+                    break
+        elif system_name == "Linux": # Linux
+            output = subprocess.check_output(["google-chrome", "--version"]).decode("utf-8")
+            version = re.search(r"(\d+)\.", output).group(1)
+
+        if version:
+            print(f"ℹ️ Sistemdeki Chrome Sürümü: {version}")
+            return int(version)
+    except:
+        pass
+    return None
 
 
 """
@@ -15,7 +57,17 @@ def get_driver():
     options = uc.ChromeOptions()
     options.add_argument("--start-maximized") # Tam ekran başlat
     options.add_argument("--disable-popup-blocking") # Pop-up engelleyiciyi kapat (çünkü bazı tiktok pencereleri pop-up olarak açılıyor orada direkt anlamasın)
-    driver = uc.Chrome(options=options) # undetected chromedriver ile başlat (tespit edilmemesi için)
+    
+    # Otomatik versiyon tespiti
+    chrome_ver = get_chrome_major_version()
+    
+    if chrome_ver:
+        # Sürüm bulunduysa eşleştirerek başlat (Hata vermez)
+        driver = uc.Chrome(options=options, version_main=chrome_ver)
+    else:
+        # Bulunamazsa varsayılan başlat
+        driver = uc.Chrome(options=options)
+        
     return driver
 
 
@@ -99,9 +151,23 @@ def upload_tiktok(video_path, description):
             time.sleep(1)
             caption_box = driver.find_element(By.CSS_SELECTOR, ".public-DraftEditor-content") # açıklama kutusu seçimi
             js_click(driver, caption_box) # JS ile odaklan yani kutuya tıkla
-            caption_box.send_keys(description) # açıklamayı yaz
-        except:
-            print("⚠️ Açıklama yazılamadı (Pas geçiliyor).")
+            time.sleep(1)
+
+            system_name = platform.system()
+            if system_name == "Darwin": # Mac ise CMD+A
+                caption_box.send_keys(Keys.COMMAND, "a")
+            else: # Windows/Linux ise CTRL+A
+                caption_box.send_keys(Keys.CONTROL, "a")
+            
+            time.sleep(0.5)
+            caption_box.send_keys(Keys.BACK_SPACE) # Sil
+            time.sleep(0.5)
+            
+            # Şimdi temiz kutuya açıklamayı yaz
+            caption_box.send_keys(description) 
+            
+        except Exception as e:
+            print(f"⚠️ Açıklama yazılamadı: {e}")
 
         # BUTON TARAMASI BAŞLIYOR (tiktok her zaman sabit nesneler kullanmıyor bazen buton bazen div yapıyor, bu yüzden ikisini de tarıyoruz)
         print("\n🦅 Sayfadaki tüm butonlar taranıyor...")
