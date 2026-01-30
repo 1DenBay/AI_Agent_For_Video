@@ -9,6 +9,49 @@ from agents.agent_subtitler import add_subtitles
 # dağıtıcı
 from distributors.agent_youtube import upload_to_youtube
 from distributors.agent_tiktok import upload_tiktok
+# temizlik
+import glob
+
+
+"""
+    [YENİ v1.2] TEMİZLİKÇİ FONKSİYON
+    İş bitince ortalığı toplar, diskte yer açar. 
+    o videoya özel ne üretilmişse sıfırlar
+"""
+def cleanup_workspace():
+    print("\n🧹 TEMİZLİK ZAMANI: Gereksiz dosyalar siliniyor...")
+    
+    # Kök dizindeki geçici dosyalar (Ses, Metadata, Ham Videolar)
+    # voice_*.mp3, raw*.mp4, video_metadata.json
+    patterns = ["voice_*.mp3", "raw*.mp4", "video_metadata.json"]
+    
+    for pattern in patterns:
+        for f in glob.glob(pattern):
+            try:
+                os.remove(f)
+                print(f"   🗑️ Silindi: {f}")
+            except: pass
+
+    # Media Files Klasörü (İndirilen stok videolar)
+    # Klasörün kendisini değil içindekileri siler
+    media_files = glob.glob("media_files/*")
+    for f in media_files:
+        try:
+            os.remove(f)
+        except: pass
+    if media_files: print(f"   🗑️ 'media_files' klasörü boşaltıldı ({len(media_files)} dosya).")
+
+    # Final Videos Klasörü (Yüklenen bitmiş videolar)
+    # İstersen burayı yorum satırı yap, arşiv kalsın. Ama silmek istersen aç.
+    final_files = glob.glob("final_videos/*")
+    for f in final_files:
+        try:
+            os.remove(f)
+        except: pass
+    if final_files: print(f"   🗑️ 'final_videos' klasörü boşaltıldı ({len(final_files)} dosya).")
+    
+    print("✨ Çalışma alanı tertemiz!")
+
 
 """
     Tüm ajanları sırayla çalıştıran ana orkestra şefi.
@@ -128,6 +171,10 @@ def main_pipeline(topic): # parametre olarak video konusu alır
         tt_desc
     )
     
+    # --- TEMİZLİK ADIMI ---
+    # TikTok penceresi kapandıktan ve kod buraya geldikten sonra çalışır.
+    cleanup_workspace()
+
     print("\n" + "="*60)
     print("🎉 FABRİKA PAYDOS! TÜM GÖREVLER BAŞARIYLA TAMAMLANDI.")
     print("="*60 + "\n")
