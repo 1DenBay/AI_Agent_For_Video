@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -90,15 +91,21 @@ def generate_video_plan(topic_tr): # Türkçe konu alır
     You are a viral content creator for TikTok and YouTube Shorts.
     Topic: '{topic_tr}'
     
-    Create a highly engaging, 30-50 second script about this topic in English.
-    The script must be captivating (e.g., "Did you know that...", "Here is a dark fact...").
+    Create a valid JSON output based on these rules:
     
-    Also, Provide 8 specific, simple search keywords for stock video footage to visualize the script. (e.g., "dark forest", "clock", "man thinking").
-    
-    Strictly output ONLY a valid JSON object in this format (no markdown, no extra text):
+    1. "script": A 30-50 sec engaging, conversational ENGLISH script.
+        IMPORTANT: The script must be a SINGLE LINE string. Do NOT use real line breaks (newlines). Use spaces only.
+    2. "title": A viral, clickbait ENGLISH title.
+    3. "description": A short, engaging ENGLISH description.
+    4. "hashtags": 5-7 popular hashtags (comma separated string).
+    5. "keywords": Exactly 8 specific ENGLISH keywords for stock video search (List of strings).
+
+    OUTPUT FORMAT (Strictly JSON):
     {{
-        "title": "A catchy short title",
-        "script": "The full spoken text of the video...",
+        "script": "Did you know that... Then imagine this... Finally...",
+        "title": "You won't believe this!",
+        "description": "Watch this mind-blowing fact...",
+        "hashtags": "#facts, #mystery",
         "keywords": ["word1", "word2", "word3", "word4", "word5", "word6", "word7", "word8"]
     }}
     """
@@ -113,31 +120,54 @@ def generate_video_plan(topic_tr): # Türkçe konu alır
         # İçerik üret
         response = model.generate_content(prompt)
         
-        # Yanıtı temizle ve JSON'a çevir
-        # Bazen model ```json ile başlar, bazen başlamaz. Hepsini temizliyoruz.
-        clean_text = response.text.replace("```json", "").replace("```", "").strip()
-        
-        # Olası tırnak hatalarına karşı basit bir önlem
+        # Temizlik (v1.1 artık temizlik fonksiyonu ile yapılıyor)
+        cleaned_json = clean_json_text(response.text)
+        #Eğer Gemini yine de satır atladıysa, JSON patlamasın diye strict=False yapıyoruz
+        # ve olası kontrol karakterlerini temizliyoruz.
         try:
-            data = json.loads(clean_text)
-            return data
+            data = json.loads(cleaned_json, strict=False)
         except json.JSONDecodeError:
-            # Eğer temizlemesine rağmen bozuksa, ham metni gösterelim
-            print("HATA: JSON ayrıştırılamadı. Gelen veri:")
-            print(clean_text)
-            return None
+            # Hata verirse son çare: Python tarafında satır sonlarını temizle
+            print("⚠️ JSON formatı bozuk geldi, onarılmaya çalışılıyor...")
+            # Bu biraz riskli ama basit tırnak içi enterları yakalamaya çalışır
+            fixed_json = cleaned_json.replace("\n", " ") 
+            data = json.loads(fixed_json, strict=False)
+        
+        # Metadata'yı dosyaya kaydet
+        with open("video_metadata.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+            
+        print("✅ İçerik Paketi Hazırlandı ve 'video_metadata.json' dosyasına kaydedildi.")
+        return data
 
+    except json.JSONDecodeError:
+        print(f"❌ JSON Hatası: Gelen veri bozuk. \n{response.text}")
+        return None
     except Exception as e:
-        print(f"HATA OLUŞTU: {e}")
+        print(f"❌ Hata: {e}")
         return None
 
-# --- TEST BLOĞU ---
+
+def clean_json_text(text):
+    """Gemini'den gelen yanıtı temizler ve saf JSON metni yapar."""
+    text = text.strip()
+    # Markdown kod bloklarını temizle
+    text = re.sub(r"^```json\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^```\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\s*```$", "", text, flags=re.MULTILINE)
+    return text.strip()
+
+    
+
+# --- BİRİM TEST ---
 if __name__ == "__main__":
-    test_konu = "The Infinite Hotel Paradox (Sonsuz Otel Paradoksu)"
+    test_konu = "The Infinite Hotel Paradox"
     sonuc = generate_video_plan(test_konu)
     
     if sonuc:
-        print("\n✅ BAŞARILI! İşte üretilen plan:")
-        print(json.dumps(sonuc, indent=4, ensure_ascii=False))
+        print("\n--- SONUÇ ---")
+        print(f"Başlık: {sonuc.get('title')}")
+        print(f"Senaryo (Kısaca): {sonuc.get('script')[:50]}...")
+        print(f"Anahtar Kelimeler: {sonuc.get('keywords')}")
     else:
-        print("\n❌ Başarısız oldu.")
+        print("❌ Test Başarısız.")
