@@ -1,6 +1,7 @@
 import os
 import json
 import re
+import random
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -86,7 +87,7 @@ CURRENT_MODEL_NAME = select_dynamic_model()
     Geminiye çıktıyı "JSON" formatında verecek.
 """
 def generate_video_plan(topic_tr): # Türkçe konu alır
-    
+
     prompt = f"""
     You are a viral content creator for TikTok and YouTube Shorts.
     Topic: '{topic_tr}'
@@ -157,17 +158,46 @@ def clean_json_text(text):
     text = re.sub(r"\s*```$", "", text, flags=re.MULTILINE)
     return text.strip()
 
-    
 
-# --- BİRİM TEST ---
-if __name__ == "__main__":
-    test_konu = "The Infinite Hotel Paradox"
-    sonuc = generate_video_plan(test_konu)
+"""
+    Sadece aşağıdaki listeden rastgele bir konu seçer ve döndürür.
+"""
+def pick_random_topic_from_list():
     
-    if sonuc:
-        print("\n--- SONUÇ ---")
-        print(f"Başlık: {sonuc.get('title')}")
-        print(f"Senaryo (Kısaca): {sonuc.get('script')[:50]}...")
-        print(f"Anahtar Kelimeler: {sonuc.get('keywords')}")
-    else:
-        print("❌ Test Başarısız.")
+    
+    # Buraya istediğin konuları ekleyebilirsiniz
+    topic_pool = [
+        "Unsolved Space Mysteries",   # Uzay Gizemleri
+        "Dark History Facts",         # Karanlık Tarih
+        "Psychological Paradoxes",    # Psikolojik Paradokslar
+        "Future Technology Scary",    # Ürkütücü Gelecek Teknolojileri
+        "Deep Ocean Creatures",       # Okyanus Canlıları
+        "Simulation Theory Evidence", # Simülasyon Teorisi
+        "Human Body Weird Facts",     # İnsan Vücudu
+        "Ancient Civilizations"       # Antik Uygarlıklar
+    ]
+    
+    # Listeden rastgele bir tane seç
+    selected_topic = random.choice(topic_pool)
+    
+    print(f"\n🎲 Havuzdan Rastgele Seçilen Konu: {selected_topic}")
+    return selected_topic
+
+
+# --- birim test ---
+if __name__ == "__main__":
+    
+    # 1. Adım: Listeden rastgele konuyu seç (AI YOK)
+    secilen_konu = pick_random_topic_from_list()
+    
+    # 2. Adım: Seçilen konuyu senaryo üretmesi için AI'ya ver
+    if secilen_konu:
+        sonuc = generate_video_plan(secilen_konu)
+        
+        if sonuc:
+            print("\n--- SONUÇ ---")
+            print(f"Başlık: {sonuc.get('title')}")
+            print(f"Senaryo (Kısaca): {sonuc.get('script')[:50]}...")
+            print(f"Anahtar Kelimeler: {sonuc.get('keywords')}")
+        else:
+            print("❌ Video planı oluşturulamadı.")
