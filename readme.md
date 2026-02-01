@@ -100,6 +100,9 @@ Program başladığında sizden bir konu isteyecektir:
 ```
 --- YENİ GÖREV ---
 Video Konusu Nedir? (Çıkış için 'q'): Ör. Kara delikler nasıl oluşur
+ - GÜNCELLEME -
+Artık Kendi İçindeki Kategoriden Otomatik Şekilde Seçiyor Herhangi Bir Girdi İstemiyor.
+(Sistemin tamamen oto-fabrika hedefine uygun)
 ```
 
 Arkanıza yaslanın! ☕ Sistem sırasıyla senaryoyu yazacak, videoyu hazırlayacak, YouTube'a yükleyecek ve TikTok için tarayıcıyı açıp paylaşımı yapacaktır.
@@ -139,6 +142,7 @@ ai-video-agent/
 ## 🗺️ Yol Haritası (v1.1)
 
 * [X] Medya Ajanı için "Akıllı Yedekleme" (Video bulunamazsa alternatif kelime arama).
+* [X] Kategori Seçimleri Otomatikleştirme
 * [ ] Farklı ses seçenekleri (ElevenLabs entegrasyonu).
 * [ ] Instagram Reels desteği.
 
