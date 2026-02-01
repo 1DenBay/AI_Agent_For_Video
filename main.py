@@ -1,7 +1,8 @@
 import os
 import time
+import random
 # üreticiler
-from agents.agent_brain import generate_video_plan
+from agents.agent_brain import generate_video_plan, pick_random_topic_from_list
 from agents.agent_voice import generate_audio_file
 from agents.agent_media import get_media_files
 from agents.agent_editor import create_final_video
@@ -156,7 +157,7 @@ def main_pipeline(topic): # parametre olarak video konusu alır
             video_title,  # brainden gelen başlık
             yt_desc, # açıklama metni
             tags=yt_tags, # etiketler
-            privacy_status="private" # TEST İÇİN 'PRIVATE' (GİZLİ). Sıkıntı yoksa 'public' yapabilirsin.
+            privacy_status="public" # TEST İÇİN 'PRIVATE' (GİZLİ). Sıkıntı yoksa 'public' yapabilirsin.
         )
     except Exception as e:
         print(f"⚠️ YouTube Hatası (Pas geçiliyor): {e}")
@@ -183,14 +184,15 @@ def main_pipeline(topic): # parametre olarak video konusu alır
 
 # BİRİM TEST
 if __name__ == "__main__":
-    # konu iste gir 
     try:
-        while True:
-            print("\n--- YENİ GÖREV ---")
-            user_topic = input("Video Konusu Nedir? (Çıkış için 'q'): ")
-            if user_topic.lower() == 'q':
-                break
-            if user_topic.strip():
-                main_pipeline(user_topic)
+        # 1. Konuyu Rastgele Seç
+        otomatik_konu = pick_random_topic_from_list()
+        
+        # 2. Fabrikaya Gönder
+        if otomatik_konu:
+            main_pipeline(otomatik_konu)
+            
     except KeyboardInterrupt:
         print("\n👋 Sistem kapatılıyor.")
+    except Exception as e:
+        print(f"\n❌ Beklenmeyen bir hata oluştu: {e}")

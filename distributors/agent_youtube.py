@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 "Test Video - Python Upload", 
                 "Bu video otomatik yüklenmiştir.",
                 ["test", "ai"],
-                privacy_status="private" # Test olduğu için Gizli yükle
+                privacy_status="public" # Test olduğu için Gizli yapılıabilir
             )
         else:
             print("❌ Test edecek video bulunamadı. Önce video üret!")
