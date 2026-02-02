@@ -10,13 +10,13 @@
 
 ### 📖  Hakkında (Information)
 
-Bu proje, uçtan uca otonom video üretimi sağlayan bir yapay zeka ajanıdır. Kullanıcıdan sadece bir **konu başlığı** alır ve geriye kalan her şeyi (senaryo, seslendirme, stok video bulma, montaj, altyazı ve sosyal medya paylaşımı) kendisi halleder.
+Bu proje, uçtan uca otonom video üretimi sağlayan bir yapay zeka ajanıdır. Kullanıcıdan sadece bir **konu başlığı** alır ve geriye kalan her şeyi (senaryo, seslendirme, başlık-açıklama, stok video bulma, montaj, altyazı ve sosyal medya paylaşımı) kendisi halleder.
 
-YouTube Shorts ve TikTok için optimize edilmiştir. İçerisinde, TikTok'un bot korumalarını aşabilen özel geliştirilmiş **Browser Automation Engine** bulunmaktadır.✨ Özellikler
+YouTube Shorts ve TikTok için optimize edilmiştir. İçerisinde, TikTok'un bot korumalarını aşabilen özel geliştirilmiş **Browser Automation Engine** bulunmaktadır.
 
 ### 🧠 Üretim Hattı (Production)
 
-* **Akıllı Senaryo (Brain Agent):** Google Gemini 2.5 Flash modeli ile viral potansiyeli yüksek senaryolar ve görsel arama terimleri üretir.
+* **Akıllı Senaryo (Brain Agent):** Google Gemini 2.5 Flash modeli ile viral potansiyeli yüksek senaryolar ve görsel arama terimleri üretir. (interaktif model seçimi vardır)
 * **Profesyonel Ses (Voice Agent):** Google TTS teknolojisi ile akıcı ve doğal seslendirme yapar.
 * **Otomatik Medya (Media Agent):** Pexels API üzerinden senaryoya en uygun stok videoları bulur ve indirir.
 * **Dinamik Montaj (Editor Agent):** MoviePy ve FFmpeg kullanarak ses ve görüntüyü senkronize eder, 3.5 saniyelik dinamik kesimler yapar.
@@ -93,16 +93,12 @@ Fabrikayı çalıştırmak için tek komut yeterlidir:
 python main.py
 ```
 
-Program başladığında sizden bir konu isteyecektir:
-
 **Plaintext**
 
 ```
---- YENİ GÖREV ---
-Video Konusu Nedir? (Çıkış için 'q'): Ör. Kara delikler nasıl oluşur
- - GÜNCELLEME -
+ - GÜNCELLEME v1.1 -
 Artık Kendi İçindeki Kategoriden Otomatik Şekilde Seçiyor Herhangi Bir Girdi İstemiyor.
-(Sistemin tamamen oto-fabrika hedefine uygun)
+(Önceden Konu Girdisi Alırdı. Sistemin tamamen oto-fabrika hedefine uyuldu)
 ```
 
 Arkanıza yaslanın! ☕ Sistem sırasıyla senaryoyu yazacak, videoyu hazırlayacak, YouTube'a yükleyecek ve TikTok için tarayıcıyı açıp paylaşımı yapacaktır.
@@ -123,7 +119,7 @@ ai-video-agent/
 │   └── agent_subtitler.py  # Altyazı (Whisper)
 ├── distributors/           # Dağıtım Ajanları
 │   ├── agent_youtube.py    # YouTube API
-│   └── agent_tiktok.py     # TikTok Otomasyonu (V12)
+│   └── agent_tiktok.py     # TikTok Otomasyonu
 ├── media_files/            # İndirilen stok videolar (Geçici)
 ├── final_videos/           # Hazır videolar
 ├── main.py                 # Ana Yönetici (Orkestra Şefi)
@@ -138,6 +134,7 @@ ai-video-agent/
 * **TikTok Otomasyonu:** TikTok dağıtımı sırasında otomatik bir Chrome penceresi açılacaktır. İşlem bitene kadar bu pencereye  **müdahale etmeyiniz** . Bot, "Paylaş" butonunu bulup tıklayacaktır.
 * **API Kotaları:** Pexels ve Gemini ücretsiz katmanlarının limitlerine dikkat ediniz.
 * **FFmpeg:** Sisteminizde FFmpeg kurulu olmalıdır (MoviePy genellikle otomatik kurar).
+* **Temizlik:** Tüm işlemler bittikten sonra Videoya özel olan tüm içerikler temizlenir.
 
 ## 🗺️ Yol Haritası (v1.1)
 
